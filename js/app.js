@@ -1,10 +1,13 @@
 const API_BASE = "https://site.api.espn.com/apis/site/v2/sports/football/nfl";
 const DEFAULT_ACCENT = "#d50a0a";
 
+const DIVISION_ORDER = [
+  ["AFC", "East"], ["AFC", "North"], ["AFC", "South"], ["AFC", "West"],
+  ["NFC", "East"], ["NFC", "North"], ["NFC", "South"], ["NFC", "West"],
+];
+
 const state = {
   search: "",
-  conf: "ALL",
-  div: "ALL",
   selectedAbbr: null,
   countdownTarget: null,
   scheduleCache: new Map(), // abbr -> { events, byeWeek }
@@ -139,60 +142,60 @@ function formatDateTime(date) {
   }).format(date);
 }
 
-// ---------- Team grid ----------
+// ---------- Team drawer (grouped by division) ----------
 
-function matchesFilter(team) {
+function matchesSearch(team) {
   const q = state.search.trim().toLowerCase();
-  if (q && !team.name.toLowerCase().includes(q) && !team.abbr.toLowerCase().includes(q)) {
-    return false;
-  }
-  if (state.conf !== "ALL" && team.conf !== state.conf) return false;
-  if (state.div !== "ALL" && team.div !== state.div) return false;
-  return true;
+  if (!q) return true;
+  return team.name.toLowerCase().includes(q) || team.abbr.toLowerCase().includes(q);
 }
 
-function renderTeamGrid() {
-  const grid = el("team-grid");
-  const filtered = TEAMS.filter(matchesFilter);
-  grid.innerHTML = "";
+function renderDrawerList() {
+  const container = el("drawer-list");
+  container.innerHTML = "";
+  let anyVisible = false;
 
-  if (!filtered.length) {
-    grid.innerHTML = `<p class="no-results">No teams match your filters.</p>`;
-    return;
+  for (const [conf, div] of DIVISION_ORDER) {
+    const teams = TEAMS.filter((t) => t.conf === conf && t.div === div && matchesSearch(t))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    if (!teams.length) continue;
+    anyVisible = true;
+
+    const label = document.createElement("div");
+    label.className = "drawer-group-label";
+    label.textContent = `${conf} ${div}`;
+    container.appendChild(label);
+
+    for (const team of teams) {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = `drawer-team${team.abbr === state.selectedAbbr ? " active" : ""}`;
+      row.style.setProperty("--row-accent", team.color);
+      row.innerHTML = `<img src="${teamLogoUrl(team.abbr)}" alt="" loading="lazy" />${team.name}`;
+      row.addEventListener("click", () => selectTeam(team.abbr));
+      container.appendChild(row);
+    }
   }
 
-  for (const team of filtered) {
-    const card = document.createElement("div");
-    card.className = "team-card";
-    card.style.setProperty("--card-accent", team.color);
-    card.setAttribute("role", "button");
-    card.setAttribute("tabindex", "0");
-    card.setAttribute("aria-label", `View ${team.name} schedule`);
-    card.innerHTML = `
-      <div class="team-card-top">
-        <img src="${teamLogoUrl(team.abbr)}" alt="" loading="lazy" />
-        <div>
-          <div class="team-card-name">${team.name}</div>
-          <div class="team-card-meta">${team.conf} ${team.div}</div>
-        </div>
-      </div>
-      <div class="team-card-actions">
-        <button type="button" data-action="schedule">View Schedule</button>
-        <a href="${team.site}" target="_blank" rel="noopener noreferrer" data-action="site">Official Site ↗</a>
-      </div>
-    `;
-    card.addEventListener("click", (e) => {
-      if (e.target.closest("[data-action='site']")) return; // let link navigate
-      selectTeam(team.abbr);
-    });
-    card.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        selectTeam(team.abbr);
-      }
-    });
-    grid.appendChild(card);
+  if (!anyVisible) {
+    container.innerHTML = `<p class="drawer-no-results">No teams match your search.</p>`;
   }
+}
+
+function openDrawer() {
+  el("drawer").classList.add("open");
+  el("drawer").setAttribute("aria-hidden", "false");
+  el("drawer-overlay").classList.add("open");
+  el("menu-toggle").setAttribute("aria-expanded", "true");
+  document.body.style.overflow = "hidden";
+}
+
+function closeDrawer() {
+  el("drawer").classList.remove("open");
+  el("drawer").setAttribute("aria-hidden", "true");
+  el("drawer-overlay").classList.remove("open");
+  el("menu-toggle").setAttribute("aria-expanded", "false");
+  document.body.style.overflow = "";
 }
 
 // ---------- Team schedule ----------
@@ -221,9 +224,9 @@ async function selectTeam(abbr) {
   if (!team) return;
   state.selectedAbbr = abbr;
   setAccent(team.color);
+  renderDrawerList();
+  closeDrawer();
 
-  el("team-grid").classList.add("hidden");
-  el("reset-btn").classList.remove("hidden");
   const section = el("schedule-section");
   section.classList.remove("hidden");
 
@@ -349,40 +352,36 @@ function renderGameRow(team, event, isNext) {
 
 function resetToAll() {
   state.selectedAbbr = null;
-  el("team-grid").classList.remove("hidden");
   el("schedule-section").classList.add("hidden");
-  el("reset-btn").classList.add("hidden");
+  renderDrawerList();
+  closeDrawer();
   loadHeroLeague();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 // ---------- Wiring ----------
 
-function initFilters() {
-  el("search").addEventListener("input", (e) => {
+function initDrawer() {
+  el("menu-toggle").addEventListener("click", () => {
+    if (el("drawer").classList.contains("open")) closeDrawer();
+    else openDrawer();
+  });
+  el("drawer-close").addEventListener("click", closeDrawer);
+  el("drawer-overlay").addEventListener("click", closeDrawer);
+  el("drawer-league").addEventListener("click", resetToAll);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeDrawer();
+  });
+
+  el("drawer-search").addEventListener("input", (e) => {
     state.search = e.target.value;
-    renderTeamGrid();
+    renderDrawerList();
   });
-
-  el("conf-filter").addEventListener("click", (e) => {
-    const btn = e.target.closest(".seg-btn");
-    if (!btn) return;
-    state.conf = btn.dataset.conf;
-    el("conf-filter").querySelectorAll(".seg-btn").forEach((b) => b.classList.toggle("active", b === btn));
-    renderTeamGrid();
-  });
-
-  el("div-filter").addEventListener("change", (e) => {
-    state.div = e.target.value;
-    renderTeamGrid();
-  });
-
-  el("reset-btn").addEventListener("click", resetToAll);
 }
 
 function init() {
-  initFilters();
-  renderTeamGrid();
+  initDrawer();
+  renderDrawerList();
   loadHeroLeague();
   clockTimer = setInterval(tickClock, 1000);
 }
