@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NFL Opening Day Countdown</title>
+<meta name="description" content="Live countdown to NFL kickoff, with team filters and full 32-team schedules." />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <div class="brand">
+        <span class="brand-mark">🏈</span>
+        <div>
+          <h1>NFL Opening Day Countdown</h1>
+          <p class="tagline">Kickoff is coming. Filter by team to see their schedule and countdown.</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="hero" class="hero">
+    <div class="wrap hero-inner">
+      <img id="hero-logo" class="hero-logo hidden" alt="" />
+      <p id="hero-label" class="hero-label">Countdown to NFL Kickoff</p>
+      <div id="hero-clock" class="hero-clock" aria-live="polite">
+        <div class="clock-unit"><span id="hc-days" class="clock-num">--</span><span class="clock-unit-label">Days</span></div>
+        <div class="clock-unit"><span id="hc-hours" class="clock-num">--</span><span class="clock-unit-label">Hours</span></div>
+        <div class="clock-unit"><span id="hc-mins" class="clock-num">--</span><span class="clock-unit-label">Min</span></div>
+        <div class="clock-unit"><span id="hc-secs" class="clock-num">--</span><span class="clock-unit-label">Sec</span></div>
+      </div>
+      <p id="hero-sub" class="hero-sub">Loading schedule…</p>
+      <a id="hero-site-link" class="hero-site-link hidden" target="_blank" rel="noopener noreferrer">Visit official team site ↗</a>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <section id="filters" class="filters">
+      <div class="filter-row">
+        <input id="search" type="search" placeholder="Search teams or cities…" aria-label="Search teams" />
+        <div class="seg" id="conf-filter" role="group" aria-label="Filter by conference">
+          <button class="seg-btn active" data-conf="ALL">All</button>
+          <button class="seg-btn" data-conf="AFC">AFC</button>
+          <button class="seg-btn" data-conf="NFC">NFC</button>
+        </div>
+        <select id="div-filter" aria-label="Filter by division">
+          <option value="ALL">All Divisions</option>
+          <option value="East">East</option>
+          <option value="North">North</option>
+          <option value="South">South</option>
+          <option value="West">West</option>
+        </select>
+        <button id="reset-btn" class="reset-btn hidden">← All Teams</button>
+      </div>
+    </section>
+
+    <section id="team-grid" class="team-grid" aria-label="Teams"></section>
+
+    <section id="schedule-section" class="schedule-section hidden">
+      <div id="schedule-header" class="schedule-header"></div>
+      <div id="schedule-status" class="schedule-status"></div>
+      <ol id="schedule-list" class="schedule-list"></ol>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Schedule &amp; game data via ESPN's public NFL API, fetched live in your browser. Team names and logos belong to the NFL and their respective clubs.</p>
+    </div>
+  </footer>
+
+  <script src="js/teams.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
