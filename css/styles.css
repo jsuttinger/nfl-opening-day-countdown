@@ -112,8 +112,10 @@ a { color: inherit; }
 }
 
 .brand-mark {
-  font-size: 1.7rem;
-  line-height: 1;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .brand h1 {
@@ -224,7 +226,12 @@ a { color: inherit; }
   cursor: pointer;
 }
 
-.drawer-league-icon { font-size: 1rem; }
+.drawer-league-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
 
 .drawer-list {
   flex: 1;
