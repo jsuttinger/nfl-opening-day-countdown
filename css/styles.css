@@ -74,9 +74,9 @@ a { color: inherit; }
 }
 
 .header-inner {
-  display: grid;
-  grid-template-columns: 34px 1fr 34px;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 16px;
 }
 
@@ -109,9 +109,8 @@ a { color: inherit; }
 .brand {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 10px;
-  text-align: center;
+  min-width: 0;
 }
 
 .brand-mark {
@@ -125,7 +124,10 @@ a { color: inherit; }
   margin: 0;
   font-family: "Teko", "Inter", sans-serif;
   font-weight: 600;
-  font-size: 1.7rem;
+  font-size: clamp(1.05rem, 5vw, 1.7rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   letter-spacing: 0.01em;
   text-transform: uppercase;
 }
