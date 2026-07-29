@@ -74,7 +74,8 @@ a { color: inherit; }
 }
 
 .header-inner {
-  display: flex;
+  display: grid;
+  grid-template-columns: 34px 1fr 34px;
   align-items: center;
   gap: 16px;
 }
@@ -108,7 +109,9 @@ a { color: inherit; }
 .brand {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
+  text-align: center;
 }
 
 .brand-mark {
