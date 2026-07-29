@@ -4,64 +4,65 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NFL Opening Day Countdown</title>
-<meta name="description" content="Live countdown to NFL kickoff, with team filters and full 32-team schedules." />
+<meta name="description" content="Live countdown to NFL kickoff, with a team menu and full 32-team schedules." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
+  <div id="drawer-overlay" class="drawer-overlay"></div>
+
+  <nav id="drawer" class="drawer" aria-label="Team menu" aria-hidden="true">
+    <div class="drawer-head">
+      <span class="drawer-title">Teams</span>
+      <button id="drawer-close" class="icon-btn" aria-label="Close menu">✕</button>
+    </div>
+    <div class="drawer-search-wrap">
+      <input id="drawer-search" type="search" placeholder="Search teams or cities…" aria-label="Search teams" />
+    </div>
+    <button id="drawer-league" class="drawer-league-btn" type="button">
+      <img class="drawer-league-icon" src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="" /> League Countdown
+    </button>
+    <div id="drawer-list" class="drawer-list"></div>
+  </nav>
+
   <header class="site-header">
-    <div class="wrap">
+    <div class="wrap header-inner">
+      <button id="menu-toggle" class="icon-btn menu-toggle" aria-label="Open team menu" aria-expanded="false" aria-controls="drawer">
+        <span></span><span></span><span></span>
+      </button>
       <div class="brand">
-        <span class="brand-mark">🏈</span>
-        <div>
-          <h1>NFL Opening Day Countdown</h1>
-          <p class="tagline">Kickoff is coming. Filter by team to see their schedule and countdown.</p>
-        </div>
+        <img class="brand-mark" src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="NFL logo" />
+        <h1>NFL Opening Day Countdown</h1>
       </div>
     </div>
   </header>
 
-  <section id="hero" class="hero">
-    <div class="wrap hero-inner">
-      <img id="hero-logo" class="hero-logo hidden" alt="" />
-      <p id="hero-label" class="hero-label">Countdown to NFL Kickoff</p>
-      <div id="hero-clock" class="hero-clock" aria-live="polite">
-        <div class="clock-unit"><span id="hc-days" class="clock-num">--</span><span class="clock-unit-label">Days</span></div>
-        <div class="clock-unit"><span id="hc-hours" class="clock-num">--</span><span class="clock-unit-label">Hours</span></div>
-        <div class="clock-unit"><span id="hc-mins" class="clock-num">--</span><span class="clock-unit-label">Min</span></div>
-        <div class="clock-unit"><span id="hc-secs" class="clock-num">--</span><span class="clock-unit-label">Sec</span></div>
-      </div>
-      <p id="hero-sub" class="hero-sub">Loading schedule…</p>
-      <a id="hero-site-link" class="hero-site-link hidden" target="_blank" rel="noopener noreferrer">Visit official team site ↗</a>
-    </div>
-  </section>
-
-  <main class="wrap">
-    <section id="filters" class="filters">
-      <div class="filter-row">
-        <input id="search" type="search" placeholder="Search teams or cities…" aria-label="Search teams" />
-        <div class="seg" id="conf-filter" role="group" aria-label="Filter by conference">
-          <button class="seg-btn active" data-conf="ALL">All</button>
-          <button class="seg-btn" data-conf="AFC">AFC</button>
-          <button class="seg-btn" data-conf="NFC">NFC</button>
+  <main>
+    <section id="hero" class="hero">
+      <div class="hero-texture" aria-hidden="true"></div>
+      <div class="wrap hero-inner">
+        <img id="hero-logo" class="hero-logo hidden" alt="" />
+        <p id="hero-label" class="hero-label">Countdown to NFL Kickoff</p>
+        <div id="hero-clock" class="hero-clock" aria-live="polite">
+          <div class="clock-unit"><span id="hc-days" class="clock-num">--</span><span class="clock-unit-label">Days</span></div>
+          <div class="clock-unit"><span id="hc-hours" class="clock-num">--</span><span class="clock-unit-label">Hours</span></div>
+          <div class="clock-unit"><span id="hc-mins" class="clock-num">--</span><span class="clock-unit-label">Min</span></div>
+          <div class="clock-unit"><span id="hc-secs" class="clock-num">--</span><span class="clock-unit-label">Sec</span></div>
         </div>
-        <select id="div-filter" aria-label="Filter by division">
-          <option value="ALL">All Divisions</option>
-          <option value="East">East</option>
-          <option value="North">North</option>
-          <option value="South">South</option>
-          <option value="West">West</option>
-        </select>
-        <button id="reset-btn" class="reset-btn hidden">← All Teams</button>
+        <p id="hero-sub" class="hero-sub">Loading schedule…</p>
+        <a id="hero-site-link" class="hero-site-link hidden" target="_blank" rel="noopener noreferrer">Visit official team site ↗</a>
       </div>
     </section>
 
-    <section id="team-grid" class="team-grid" aria-label="Teams"></section>
-
-    <section id="schedule-section" class="schedule-section hidden">
-      <div id="schedule-header" class="schedule-header"></div>
-      <div id="schedule-status" class="schedule-status"></div>
-      <ol id="schedule-list" class="schedule-list"></ol>
-    </section>
+    <div class="wrap">
+      <section id="schedule-section" class="schedule-section hidden">
+        <div id="schedule-header" class="schedule-header"></div>
+        <div id="schedule-status" class="schedule-status"></div>
+        <ol id="schedule-list" class="schedule-list"></ol>
+      </section>
+    </div>
   </main>
 
   <footer class="site-footer">
