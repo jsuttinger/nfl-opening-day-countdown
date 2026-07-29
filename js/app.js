@@ -1,5 +1,5 @@
 const API_BASE = "https://site.api.espn.com/apis/site/v2/sports/football/nfl";
-const DEFAULT_ACCENT = "#d50a0a";
+const DEFAULT_ACCENT = "#0ea5e9";
 
 const DIVISION_ORDER = [
   ["AFC", "East"], ["AFC", "North"], ["AFC", "South"], ["AFC", "West"],
