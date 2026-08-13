@@ -9,7 +9,7 @@ const TEAMS = [
   { id: "29", abbr: "CAR", name: "Carolina Panthers",     conf: "NFC", div: "South", color: "#0085CA", site: "https://www.panthers.com" },
   { id: "3",  abbr: "CHI", name: "Chicago Bears",         conf: "NFC", div: "North", color: "#0B162A", site: "https://www.chicagobears.com" },
   { id: "4",  abbr: "CIN", name: "Cincinnati Bengals",    conf: "AFC", div: "North", color: "#FB4F14", site: "https://www.bengals.com" },
-  { id: "5",  abbr: "CLE", name: "Cleveland Browns",      conf: "AFC", div: "North", color: "#311D00", site: "https://www.clevelandbrowns.com" },
+  { id: "5",  abbr: "CLE", name: "Cleveland Browns",      conf: "AFC", div: "North", color: "#FF3C00", site: "https://www.clevelandbrowns.com" },
   { id: "6",  abbr: "DAL", name: "Dallas Cowboys",        conf: "NFC", div: "East",  color: "#003594", site: "https://www.dallascowboys.com" },
   { id: "7",  abbr: "DEN", name: "Denver Broncos",        conf: "AFC", div: "West",  color: "#FB4F14", site: "https://www.denverbroncos.com" },
   { id: "8",  abbr: "DET", name: "Detroit Lions",         conf: "NFC", div: "North", color: "#0076B6", site: "https://www.detroitlions.com" },

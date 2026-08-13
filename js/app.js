@@ -77,15 +77,53 @@ function hslToHex(h, s, l) {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
-const MIN_ACCENT_LIGHTNESS = 0.65;
-const MIN_ACCENT_SATURATION = 0.45;
+// WCAG relative luminance + contrast ratio, used to decide how much (if any)
+// a color needs to be lightened against the page background.
+const PAGE_BG_HEX = "#0a0e14";
 
+function relativeLuminance(hex) {
+  const full = hex.replace("#", "");
+  const chan = (v) => {
+    const c = parseInt(v, 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  const r = chan(full.slice(0, 2));
+  const g = chan(full.slice(2, 4));
+  const b = chan(full.slice(4, 6));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contrastRatio(hexA, hexB) {
+  const a = relativeLuminance(hexA);
+  const b = relativeLuminance(hexB);
+  const lighter = Math.max(a, b);
+  const darker = Math.min(a, b);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+const TARGET_CONTRAST = 4.5;
+
+// Nudge lightness up only as far as needed to clear the contrast target,
+// rather than snapping every team to the same brightness — that flattened
+// distinct hues (e.g. Browns' orange-brown) into a near-identical gold,
+// making teams with different colors look the same. A small saturation
+// floor is a last resort for truly gray/colorless inputs (e.g. black).
 function readableAccent(hex) {
   const { h, s, l } = hexToHsl(hex);
-  const newL = Math.max(l, MIN_ACCENT_LIGHTNESS);
-  const newS = s > 0 ? Math.max(s, MIN_ACCENT_SATURATION) : 0;
-  if (newL === l && newS === s) return hex;
-  return hslToHex(h, newS, newL);
+  let newL = l;
+  for (let i = 0; i < 60 && contrastRatio(hslToHex(h, s, newL), PAGE_BG_HEX) < TARGET_CONTRAST; i++) {
+    newL = Math.min(0.9, newL + 0.015);
+  }
+  let candidate = hslToHex(h, s, newL);
+  if (s > 0 && contrastRatio(candidate, PAGE_BG_HEX) < TARGET_CONTRAST) {
+    const boostedS = Math.max(s, 0.5);
+    newL = l;
+    for (let i = 0; i < 60 && contrastRatio(hslToHex(h, boostedS, newL), PAGE_BG_HEX) < TARGET_CONTRAST; i++) {
+      newL = Math.min(0.95, newL + 0.015);
+    }
+    candidate = hslToHex(h, boostedS, newL);
+  }
+  return candidate;
 }
 
 async function fetchJson(url) {
@@ -256,13 +294,15 @@ function closeDrawer() {
 async function getTeamSchedule(abbr) {
   if (state.scheduleCache.has(abbr)) return state.scheduleCache.get(abbr);
   const team = TEAMS_BY_ABBR[abbr];
-  let data = await fetchJson(`${API_BASE}/teams/${team.id}/schedule`);
+  // seasontype=2 pins this to the regular season — without it, ESPN's "current"
+  // default can return the preseason or postseason slate depending on the date.
+  let data = await fetchJson(`${API_BASE}/teams/${team.id}/schedule?seasontype=2`);
   const now = new Date();
   const allPast = (data.events || []).every((e) => new Date(e.date) < now);
   if (allPast) {
     try {
       const retryYear = now.getFullYear() + 1;
-      data = await fetchJson(`${API_BASE}/teams/${team.id}/schedule?season=${retryYear}`);
+      data = await fetchJson(`${API_BASE}/teams/${team.id}/schedule?seasontype=2&season=${retryYear}`);
     } catch {
       // keep original data
     }
