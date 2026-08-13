@@ -18,11 +18,12 @@ let clockTimer = null;
 const el = (id) => document.getElementById(id);
 
 function setAccent(color) {
-  document.documentElement.style.setProperty("--accent", color);
-  document.documentElement.style.setProperty("--card-accent", color);
+  const readable = readableAccent(color);
+  document.documentElement.style.setProperty("--accent", readable);
+  document.documentElement.style.setProperty("--card-accent", readable);
   document.documentElement.style.setProperty(
     "--accent-soft",
-    hexToRgba(color, 0.18)
+    hexToRgba(readable, 0.18)
   );
 }
 
@@ -33,6 +34,58 @@ function hexToRgba(hex, alpha) {
   const g = (bigint >> 8) & 255;
   const b = bigint & 255;
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// A few team colors (Browns brown, Ravens purple, Steelers/Raiders black, etc.)
+// are too dark to read as text or a glow against our near-black background.
+// Boost lightness/saturation just enough to stay legible while keeping the hue.
+function hexToHsl(hex) {
+  const h = hex.replace("#", "");
+  const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+  const r = parseInt(full.slice(0, 2), 16) / 255;
+  const g = parseInt(full.slice(2, 4), 16) / 255;
+  const b = parseInt(full.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  let h2 = 0, s = 0;
+  const d = max - min;
+  if (d !== 0) {
+    s = d / (1 - Math.abs(2 * l - 1));
+    switch (max) {
+      case r: h2 = ((g - b) / d) % 6; break;
+      case g: h2 = (b - r) / d + 2; break;
+      default: h2 = (r - g) / d + 4;
+    }
+    h2 *= 60;
+    if (h2 < 0) h2 += 360;
+  }
+  return { h: h2, s, l };
+}
+
+function hslToHex(h, s, l) {
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  let r = 0, g = 0, b = 0;
+  if (h < 60) [r, g, b] = [c, x, 0];
+  else if (h < 120) [r, g, b] = [x, c, 0];
+  else if (h < 180) [r, g, b] = [0, c, x];
+  else if (h < 240) [r, g, b] = [0, x, c];
+  else if (h < 300) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+  const toHex = (v) => Math.round((v + m) * 255).toString(16).padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+const MIN_ACCENT_LIGHTNESS = 0.65;
+const MIN_ACCENT_SATURATION = 0.45;
+
+function readableAccent(hex) {
+  const { h, s, l } = hexToHsl(hex);
+  const newL = Math.max(l, MIN_ACCENT_LIGHTNESS);
+  const newS = s > 0 ? Math.max(s, MIN_ACCENT_SATURATION) : 0;
+  if (newL === l && newS === s) return hex;
+  return hslToHex(h, newS, newL);
 }
 
 async function fetchJson(url) {
@@ -170,7 +223,7 @@ function renderDrawerList() {
       const row = document.createElement("button");
       row.type = "button";
       row.className = `drawer-team${team.abbr === state.selectedAbbr ? " active" : ""}`;
-      row.style.setProperty("--row-accent", team.color);
+      row.style.setProperty("--row-accent", readableAccent(team.color));
       row.innerHTML = `<img src="${teamLogoUrl(team.abbr)}" alt="" loading="lazy" />${team.name}`;
       row.addEventListener("click", () => selectTeam(team.abbr));
       container.appendChild(row);
